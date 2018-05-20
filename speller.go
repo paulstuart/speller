@@ -20,20 +20,6 @@ func words(text string) []string {
 	return re.FindAllString(strings.ToLower(text), -1)
 }
 
-type split struct {
-	L, R string
-}
-
-type splits []split
-
-func cleaves(word string) (results splits) {
-	for i := range word {
-		results = append(results, split{word[:i], word[i:]})
-	}
-	results = append(results, split{word, ""})
-	return results
-}
-
 func init() {
 	WORDS = counter(words(readFile(sample)))
 	for _, occurs := range WORDS {
@@ -46,49 +32,40 @@ func Correction(word string) string {
 	return max(candidates(word), probability)
 }
 
-func deletes(list splits) (results []string) {
-	for _, s := range list {
-		if s.R != "" {
-			results = append(results, s.L+s.R[1:])
-		}
+// transpose transposes the first 2 characters
+func transpose(s split, list *[]string) {
+	if len(s.R) > 1 {
+		*list = append(*list, s.L+s.R[1:2]+s.R[0:1]+s.R[2:])
 	}
-	return results
 }
 
-func transposes(list splits) (results []string) {
-	for _, s := range list {
-		if len(s.R) > 1 {
-			results = append(results, s.L+s.R[1:2]+s.R[0:1]+s.R[2:])
+// replace replaces the "split" character with alphabetic permutations
+func replace(s split, list *[]string) {
+	if len(s.R) > 0 {
+		for _, b := range letters {
+			c := string(b)
+			*list = append(*list, s.L+c+s.R[1:])
 		}
 	}
-	return results
 }
 
-// replaces replaces the "split" character with alphabetic permutations
-func replaces(list splits) (results []string) {
-	for _, s := range list {
-		if len(s.R) > 0 {
-			for _, b := range letters {
-				c := string(b)
-				results = append(results, s.L+c+s.R[1:])
-			}
-		}
+// deleted returns splits with non-empty R side
+func deleted(s split, list *[]string) {
+	if s.R != "" {
+		*list = append(*list, s.L+s.R[1:])
 	}
-	return results
 }
 
-func inserts(list splits) (results []string) {
-	for _, s := range list {
-		for _, c := range letters {
-			results = append(results, s.L+string(c)+s.R)
-		}
+// insert inserts the alphabet mid-split
+func insert(s split, list *[]string) {
+	for _, c := range letters {
+		*list = append(*list, s.L+string(c)+s.R)
 	}
-	return results
 }
 
 func edits1(word string) []string {
 	list := cleaves(word)
-	return sets(deletes(list), transposes(list), replaces(list), inserts(list))
+	return sets(list.comp(deleted), list.comp(transpose), list.comp(replace), list.comp(insert))
 }
 
 // edits2 returns all edits that are two edits away from `word`

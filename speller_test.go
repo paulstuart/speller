@@ -14,6 +14,7 @@ func cmp(t *testing.T, expects, got []string) {
 		t.Fatalf("\nexpected: %v\ngot: %v\n", expects, got)
 	}
 }
+
 func TestSplits(t *testing.T) {
 	expects := splits{
 		{"", "hello"},
@@ -44,13 +45,13 @@ func TestSplits2(t *testing.T) {
 
 func TestDeletes(t *testing.T) {
 	expects := []string{"o", "n"}
-	got := deletes(cleaves("no"))
+	got := cleaves("no").comp(deleted)
 	cmp(t, expects, got)
 }
 
 func TestTransposes(t *testing.T) {
 	expects := []string{"on"}
-	got := transposes(cleaves("no"))
+	got := cleaves("no").comp(transpose)
 	cmp(t, expects, got)
 }
 
@@ -58,7 +59,7 @@ func TestReplaces(t *testing.T) {
 	expects := []string{
 		"ao", "bo", "co", "do", "eo", "fo", "go", "ho", "io", "jo", "ko", "lo", "mo", "no", "oo", "po", "qo", "ro", "so", "to", "uo", "vo", "wo", "xo", "yo", "zo", "na", "nb", "nc", "nd", "ne", "nf", "ng", "nh", "ni", "nj", "nk", "nl", "nm", "nn", "no", "np", "nq", "nr", "ns", "nt", "nu", "nv", "nw", "nx", "ny", "nz",
 	}
-	got := replaces(cleaves("no"))
+	got := cleaves("no").comp(replace)
 	cmp(t, expects, got)
 }
 
