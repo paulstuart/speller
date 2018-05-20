@@ -15,7 +15,7 @@ func cmp(t *testing.T, expects, got []string) {
 	}
 }
 func TestSplits(t *testing.T) {
-	expects := []split{
+	expects := splits{
 		{"", "hello"},
 		{"h", "ello"},
 		{"he", "llo"},
@@ -23,7 +23,7 @@ func TestSplits(t *testing.T) {
 		{"hell", "o"},
 		{"hello", ""},
 	}
-	got := splits("hello")
+	got := cleaves("hello")
 
 	if !reflect.DeepEqual(got, expects) {
 		t.Fatalf("expected: %v -- got: %v\n", expects, got)
@@ -31,12 +31,12 @@ func TestSplits(t *testing.T) {
 }
 
 func TestSplits2(t *testing.T) {
-	expects := []split{
+	expects := splits{
 		{"", "no"},
 		{"n", "o"},
 		{"no", ""},
 	}
-	got := splits("no")
+	got := cleaves("no")
 	if !reflect.DeepEqual(got, expects) {
 		t.Fatalf("expected: %v -- got: %v\n", expects, got)
 	}
@@ -44,13 +44,13 @@ func TestSplits2(t *testing.T) {
 
 func TestDeletes(t *testing.T) {
 	expects := []string{"o", "n"}
-	got := deletes(splits("no"))
+	got := deletes(cleaves("no"))
 	cmp(t, expects, got)
 }
 
 func TestTransposes(t *testing.T) {
 	expects := []string{"on"}
-	got := transposes(splits("no"))
+	got := transposes(cleaves("no"))
 	cmp(t, expects, got)
 }
 
@@ -58,7 +58,7 @@ func TestReplaces(t *testing.T) {
 	expects := []string{
 		"ao", "bo", "co", "do", "eo", "fo", "go", "ho", "io", "jo", "ko", "lo", "mo", "no", "oo", "po", "qo", "ro", "so", "to", "uo", "vo", "wo", "xo", "yo", "zo", "na", "nb", "nc", "nd", "ne", "nf", "ng", "nh", "ni", "nj", "nk", "nl", "nm", "nn", "no", "np", "nq", "nr", "ns", "nt", "nu", "nv", "nw", "nx", "ny", "nz",
 	}
-	got := replaces(splits("no"))
+	got := replaces(cleaves("no"))
 	cmp(t, expects, got)
 }
 

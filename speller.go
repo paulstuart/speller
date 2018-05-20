@@ -24,7 +24,9 @@ type split struct {
 	L, R string
 }
 
-func splits(word string) (results []split) {
+type splits []split
+
+func cleaves(word string) (results splits) {
 	for i := range word {
 		results = append(results, split{word[:i], word[i:]})
 	}
@@ -44,7 +46,7 @@ func Correction(word string) string {
 	return max(candidates(word), probability)
 }
 
-func deletes(list []split) (results []string) {
+func deletes(list splits) (results []string) {
 	for _, s := range list {
 		if s.R != "" {
 			results = append(results, s.L+s.R[1:])
@@ -53,7 +55,7 @@ func deletes(list []split) (results []string) {
 	return results
 }
 
-func transposes(list []split) (results []string) {
+func transposes(list splits) (results []string) {
 	for _, s := range list {
 		if len(s.R) > 1 {
 			results = append(results, s.L+s.R[1:2]+s.R[0:1]+s.R[2:])
@@ -63,7 +65,7 @@ func transposes(list []split) (results []string) {
 }
 
 // replaces replaces the "split" character with alphabetic permutations
-func replaces(list []split) (results []string) {
+func replaces(list splits) (results []string) {
 	for _, s := range list {
 		if len(s.R) > 0 {
 			for _, b := range letters {
@@ -75,7 +77,7 @@ func replaces(list []split) (results []string) {
 	return results
 }
 
-func inserts(list []split) (results []string) {
+func inserts(list splits) (results []string) {
 	for _, s := range list {
 		for _, c := range letters {
 			results = append(results, s.L+string(c)+s.R)
@@ -85,7 +87,7 @@ func inserts(list []split) (results []string) {
 }
 
 func edits1(word string) []string {
-	list := splits(word)
+	list := cleaves(word)
 	return sets(deletes(list), transposes(list), replaces(list), inserts(list))
 }
 
