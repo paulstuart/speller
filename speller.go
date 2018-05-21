@@ -1,13 +1,8 @@
 package speller
 
-import (
-	"regexp"
-	"strings"
-)
-
 const (
 	letters = "abcdefghijklmnopqrstuvwxyz"
-	sample  = "big.txt.gz"
+	Sample  = "big.txt.gz"
 )
 
 var (
@@ -15,21 +10,21 @@ var (
 	TOTAL int
 )
 
-func words(text string) []string {
-	re := regexp.MustCompile(`[a-zA-Z]+`) // original used `\w+` but we're only dealing with alpha characters so....
-	return re.FindAllString(strings.ToLower(text), -1)
-}
-
-func init() {
-	WORDS = counter(words(readFile(sample)))
-	for _, occurs := range WORDS {
-		TOTAL += occurs
-	}
+// probability returns the percent of times `word` is found in the corpus
+func probability(word string) float64 {
+	return float64(WORDS[word]) / float64(TOTAL)
 }
 
 // Correction returns the most probable spelling correction for word
 func Correction(word string) string {
-	return max(candidates(word), probability)
+	return max(Candidates(word), probability)
+}
+
+// deleted returns splits with non-empty R side
+func deleted(s split, list *[]string) {
+	if s.R != "" {
+		*list = append(*list, s.L+s.R[1:])
+	}
 }
 
 // transpose transposes the first 2 characters
@@ -49,13 +44,6 @@ func replace(s split, list *[]string) {
 	}
 }
 
-// deleted returns splits with non-empty R side
-func deleted(s split, list *[]string) {
-	if s.R != "" {
-		*list = append(*list, s.L+s.R[1:])
-	}
-}
-
 // insert inserts the alphabet mid-split
 func insert(s split, list *[]string) {
 	for _, c := range letters {
@@ -63,6 +51,33 @@ func insert(s split, list *[]string) {
 	}
 }
 
+// Candidates generate possible spelling corrections for word
+func Candidates(word string) []string {
+	self := []string{word}
+	if list := set(known(self)...); len(list) > 0 {
+		return list
+	}
+	if list := set(edits1(word)...); len(list) > 0 {
+		return list
+	}
+	if list := set(edits2(word)...); len(list) > 0 {
+		return list
+	}
+	return self
+}
+
+// known returns the subset of `words` that appear in the dictionary of WORDS
+func known(words []string) []string {
+	m := make(map[string]struct{})
+	for _, word := range words {
+		if _, ok := WORDS[word]; ok {
+			m[word] = struct{}{}
+		}
+	}
+	return slice(m)
+}
+
+// edits1 returns all edits that are one edit away from `word`
 func edits1(word string) []string {
 	list := cleaves(word)
 	return sets(list.comp(deleted), list.comp(transpose), list.comp(replace), list.comp(insert))
@@ -78,37 +93,10 @@ func edits2(word string) (results []string) {
 	return results
 }
 
-// includes returns a subset of words that exist in corpus
-func includes(words []string) (results []string) {
-	for _, word := range words {
-		if _, ok := WORDS[word]; ok {
-			results = append(results, word)
-		}
+// InitFile initializes the dictionary using the given filename
+func InitFile(filename string) {
+	WORDS = counter(words(readFile(filename)))
+	for _, occurs := range WORDS {
+		TOTAL += occurs
 	}
-	return
-}
-
-// known returns a unique subset of words that exist in the corpus
-func known(words []string) []string {
-	return set(includes(words)...)
-}
-
-// candidates generate possible spelling corrections for word
-func candidates(word string) []string {
-	self := []string{word}
-	if list := sets(known(self)); len(list) > 0 {
-		return list
-	}
-	if list := sets(edits1(word)); len(list) > 0 {
-		return list
-	}
-	if list := sets(edits2(word)); len(list) > 0 {
-		return list
-	}
-	return self
-}
-
-// probability returns the percent of times `word` is found in the corpus
-func probability(word string) float64 {
-	return float64(WORDS[word]) / float64(TOTAL)
 }

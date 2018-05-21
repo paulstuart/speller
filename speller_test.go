@@ -6,6 +6,10 @@ import (
 	"testing"
 )
 
+func init() {
+	InitFile(Sample)
+}
+
 func cmp(t *testing.T, expects, got []string) {
 	t.Helper()
 	sort.Strings(expects)
