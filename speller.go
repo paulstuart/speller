@@ -2,17 +2,19 @@ package speller
 
 const (
 	letters = "abcdefghijklmnopqrstuvwxyz"
-	Sample  = "big.txt.gz"
+
+	// Sample provides a corpus used to train the dictionary
+	Sample = "big.txt.gz"
 )
 
 var (
-	WORDS map[string]int
-	TOTAL int
+	wordFreq  map[string]int
+	wordTotal int
 )
 
 // probability returns the percent of times `word` is found in the corpus
 func probability(word string) float64 {
-	return float64(WORDS[word]) / float64(TOTAL)
+	return float64(wordFreq[word]) / float64(wordTotal)
 }
 
 // Correction returns the most probable spelling correction for word
@@ -21,33 +23,33 @@ func Correction(word string) string {
 }
 
 // deleted returns splits with non-empty R side
-func deleted(s split, list *[]string) {
+func deleted(s split, save func(string)) {
 	if s.R != "" {
-		*list = append(*list, s.L+s.R[1:])
+		save(s.L + s.R[1:])
 	}
 }
 
 // transpose transposes the first 2 characters
-func transpose(s split, list *[]string) {
+func transpose(s split, save func(string)) {
 	if len(s.R) > 1 {
-		*list = append(*list, s.L+s.R[1:2]+s.R[0:1]+s.R[2:])
+		save(s.L + s.R[1:2] + s.R[0:1] + s.R[2:])
 	}
 }
 
 // replace replaces the "split" character with alphabetic permutations
-func replace(s split, list *[]string) {
+func replace(s split, save func(string)) {
 	if len(s.R) > 0 {
 		for _, b := range letters {
 			c := string(b)
-			*list = append(*list, s.L+c+s.R[1:])
+			save(s.L + c + s.R[1:])
 		}
 	}
 }
 
 // insert inserts the alphabet mid-split
-func insert(s split, list *[]string) {
+func insert(s split, save func(string)) {
 	for _, c := range letters {
-		*list = append(*list, s.L+string(c)+s.R)
+		save(s.L + string(c) + s.R)
 	}
 }
 
@@ -66,11 +68,11 @@ func Candidates(word string) []string {
 	return self
 }
 
-// known returns the subset of `words` that appear in the dictionary of WORDS
+// known returns the subset of `words` that appear in the dictionary of wordFreq
 func known(words []string) []string {
 	m := make(map[string]struct{})
 	for _, word := range words {
-		if _, ok := WORDS[word]; ok {
+		if _, ok := wordFreq[word]; ok {
 			m[word] = struct{}{}
 		}
 	}
@@ -95,8 +97,8 @@ func edits2(word string) (results []string) {
 
 // InitFile initializes the dictionary using the given filename
 func InitFile(filename string) {
-	WORDS = counter(words(readFile(filename)))
-	for _, occurs := range WORDS {
-		TOTAL += occurs
+	wordFreq = counter(words(readFile(filename)))
+	for _, occurs := range wordFreq {
+		wordTotal += occurs
 	}
 }

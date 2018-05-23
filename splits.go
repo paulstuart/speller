@@ -14,10 +14,13 @@ func cleaves(word string) (results splits) {
 	return results
 }
 
-func (list splits) comp(fn func(split, *[]string)) []string {
+func (list splits) comp(fn func(split, func(string))) []string {
 	results := []string{}
+	save := func(s string) {
+		results = append(results, s)
+	}
 	for _, s := range list {
-		fn(s, &results)
+		fn(s, save)
 	}
 	return results
 }
