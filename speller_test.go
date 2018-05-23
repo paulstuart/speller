@@ -72,3 +72,9 @@ func TestEdits1(t *testing.T) {
 	got := edits1("no")
 	cmp(t, expects, got)
 }
+
+func TestCorrection(t *testing.T) {
+	if correct := Correction("speling"); correct != "spelling" {
+		t.Fatalf("expected 'speling' -- got '%s'\n", correct)
+	}
+}

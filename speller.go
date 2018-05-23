@@ -81,8 +81,7 @@ func known(words []string) []string {
 
 // edits1 returns all edits that are one edit away from `word`
 func edits1(word string) []string {
-	list := cleaves(word)
-	return sets(list.comp(deleted), list.comp(transpose), list.comp(replace), list.comp(insert))
+	return set(cleaves(word).comp(deleted, transpose, replace, insert)...)
 }
 
 // edits2 returns all edits that are two edits away from `word`
