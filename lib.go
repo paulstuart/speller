@@ -65,12 +65,12 @@ func sum(list ...int) int {
 }
 
 func fileReader(filename string) ([]byte, error) {
+	f, err := os.Open(filename)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
 	if strings.HasSuffix(filename, ".gz") {
-		f, err := os.Open(filename)
-		if err != nil {
-			return nil, err
-		}
-		defer f.Close()
 		r, err := gzip.NewReader(f)
 		if err != nil {
 			return nil, err
@@ -78,11 +78,7 @@ func fileReader(filename string) ([]byte, error) {
 		defer r.Close()
 		return ioutil.ReadAll(r)
 	}
-	data, err := ioutil.ReadFile(filename)
-	if err != nil {
-		panic(err)
-	}
-	return data, nil
+	return ioutil.ReadAll(f)
 }
 
 func readFile(filename string) string {
