@@ -1,4 +1,4 @@
-# speller
+# speller [![GoDoc](https://godoc.org/github.com/paulstuart/speller?status.svg)](http://godoc.org/github.com/paulstuart/speller) [![Build-Status](https://travis-ci.org/paulstuart/speller.svg?branch=master)](https://travis-ci.org/paulstuart/speller)
 A port of Peter Norvig's spell checker
 
 How could one not be impressed by Peter Norvig's "simple" [spell checker](https://norvig.com/spell-correct.html)?
